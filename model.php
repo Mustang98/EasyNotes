@@ -8,7 +8,7 @@ class User
    var $email;
    var $lastId=0;
 
-   function User($e, $p, $n = null)
+   function User($e, $p, $n=null)
    {
       $this->email = $e;
       $this->password = $p;
@@ -33,10 +33,11 @@ class Note
    }
 }
 
+
 function getUserInfo()
 {
    global $db;
-   if ($_SESSION[email] == null) return "Error. Please login to do this operation.";
+   if ($_SESSION[email] == null) return "Ошибка доступа. Войдите в систему и повторите операцию.";
    $notes = $db->findOne(array(email => $_SESSION[email]));
    return $notes;
 }
@@ -45,7 +46,7 @@ function createUser($u)
 {
    global $db;
    $number = $db->count(array(email=>$u->email));
-   if ($number == 1) return "Error. This E-mail has already registered.";
+   if ($number == 1) return "Ошибка. Этот e-mail уже зарегистрирован.";
    $newUser = array(
       "email"=>$u->email,
       "password"=>$u->password,
@@ -61,15 +62,15 @@ function checkLogin($u)
 {
    global $db;
    $foundUser = $db->findOne(array(email=>$u->email));
-   if ($foundUser == null) return "Error. This e-mail is not registered.";
+   if ($foundUser == null) return "Ошибка. Этот e-mail не зарегистрирован.";
    if ($foundUser[password] == $u->password) return "OK";
-   return "Error. The password is incorrect";
+   return "Ошибка. Неверный пароль.";
 }
 
 function updateUserName($newName)
 {
    global $db;
-   if ($_SESSION[email] == null) return "Error. Please login to change name.";
+   if ($_SESSION[email] == null) return "Ошибка доступа. Войдите в систему и повторите операцию.";
    $curUser = array(email => $_SESSION[email]);
    $change = array('$set' => array(name => $newName));
    $db->update($curUser, $change);
@@ -79,7 +80,7 @@ function updateUserName($newName)
 function updatePassword($newPassword)
 {
    global $db;
-   if ($_SESSION[email] == null) return "Error. Please login to do this operation.";
+   if ($_SESSION[email] == null) return "Ошибка доступа. Войдите в систему и повторите операцию.";
    $curUser = array(email => $_SESSION[email]);
    $change = array('$set' => array(password => $newPassword));
    $db->update($curUser, $change);
@@ -99,7 +100,7 @@ function getNewNoteId()
 function addNote($note)//объект заметки
 {
    global $db;
-   if ($_SESSION[email] == null) return "Error. Please login to do this operation.";//не залогинен 
+   if ($_SESSION[email] == null) return "Ошибка доступа. Войдите в систему и повторите операцию.";//не залогинен 
    if ($note->id == -1) 
       $note->id = getNewNoteId();//если -1, то новая заметка, иначе с обозначенным id
    $curUser = array(email => $_SESSION[email]); //нужный документ
@@ -111,13 +112,13 @@ function addNote($note)//объект заметки
       "lastUpd" => $note->lastUpd
    );//новая заметка
    $db->update($curUser, array('$push' => array(notes => $newNote)));//добавляем
-   return "OK";
+   return $note->id;
 };
 
 function deleteNote($id)
 {
    global $db;
-   if ($_SESSION[email] == null) return "Error. Please login to do this operation.";//не залогинен 
+   if ($_SESSION[email] == null) return "Ошибка доступа. Войдите в систему и повторите операцию.";//не залогинен 
    $curUser = array(email => $_SESSION[email]); //нужный документ
    $change = array('$pull' => array(notes => array(id => $id))); //удаляемое поле
    $db->update($curUser, $change);//удаляем
@@ -127,7 +128,7 @@ function deleteNote($id)
 function updateNote($changeNote)//получаем объект заметки (новое название, текст, [lastUpd автоматически] id заметки)
 {
    global $db;
-   if ($_SESSION[email] == null) return "Error. Please login to do this operation.";//не залогинен 
+   if ($_SESSION[email] == null) return "Ошибка доступа. Войдите в систему и повторите операцию.";//не залогинен 
    //получаем старую заметку по id:
    $a = $db->findOne(array(email => $_SESSION[email]), array("notes" => array('$elemMatch' => array(id => $changeNote->id))));
    $changeNote->created = $a[notes][0][created];//получаем ее дату создания
